@@ -22,7 +22,7 @@ export async function createUserController(req: Request, res: Response) {
             return res.status(400).json({ error: "Username is required" });
         }
 
-        const newUser = await service.addUser(username);
+        const newUser = await service.addUser(username.trim());
         return res.status(201).json(newUser);
 
     } catch (err: any) {
@@ -51,10 +51,12 @@ export async function addExerciseController(req: Request, res: Response) {
         if (!description || !duration) {
             return res.status(400).json({ error: "Description and duration are required" });
         }
-
+        if (duration <= 0) {
+            return res.status(400).json({ error: "Duration must be a positive number" });
+        }
         const exerciseRecord = await service.addExercise(
             Number(_id),
-            description,
+            description.trim(),
             Number(duration),
             date ? String(date) : undefined
         );

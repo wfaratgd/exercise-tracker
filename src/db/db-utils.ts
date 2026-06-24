@@ -8,6 +8,7 @@ type SQLVerb = "SELECT" | "INSERT" | "UPDATE" | "DELETE";
 class QueryBuilder<T> {
     private _where: string[] = [];
     private _params: unknown[] = [];
+    private _orderBy?: string;
     private _limit?: number;
 
     constructor(
@@ -21,6 +22,12 @@ class QueryBuilder<T> {
     where(condition: string, value: unknown): this {
         this._where.push(condition);
         this._params.push(value);
+        return this;
+    }
+
+    /** Adds an ORDER BY clause. Direction defaults to "ASC". */
+    orderBy(column: string, direction: "ASC" | "DESC" = "ASC"): this {
+        this._orderBy = `${column} ${direction}`;
         return this;
     }
 
@@ -42,6 +49,10 @@ class QueryBuilder<T> {
 
         if (this._where.length > 0) {
             sql += ` WHERE ${this._where.join(" AND ")}`;
+        }
+
+        if (this._orderBy) {
+            sql += ` ORDER BY ${this._orderBy}`;
         }
 
         if (this._limit) {
@@ -73,6 +84,13 @@ class QueryBuilder<T> {
             const row = await this.db.get<T>(sql, params);
             return row ?? null;
         });
+    }
+
+    /** Executes a SELECT and explicitly returns the first row or null.
+     * Syntactic sugar mirroring standard modern ORM APIs.
+     */
+    async first(): Promise<T | null> {
+        return this.get();
     }
 
     /** Executes a DELETE or UPDATE. */

@@ -53,12 +53,25 @@ export function createUsersRepo(db: Database) {
             if (options?.to) {
                 query = query.where("date <= ?", options.to);
             }
+
+            query = query.orderBy("date", "ASC");
+
             if (options?.limit) {
                 query = query.limit(options.limit);
             }
 
-            return query.all();
-        }
 
+            return query.all();
+        },
+
+        async getExerciseCountByUserId(userId: number): Promise<number> {
+            const result = await utils
+                .select("COUNT(*) as count")
+                .from<{ count: number }>("exercises")
+                .where("user_id = ?", userId)
+                .first();
+
+            return result?.count || 0;
+        }
     };
 }

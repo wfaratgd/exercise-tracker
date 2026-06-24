@@ -43,7 +43,10 @@ export async function getUserLogs(
     const user = await repo.getUserById(userId);
     if (!user) throw new Error("User not found");
 
-    const dbExercises = await repo.getExercisesByUserId(userId, { from, to, limit });
+    const [dbExercises, totalCount] = await Promise.all([
+        repo.getExercisesByUserId(userId, { from, to, limit }),
+        repo.getExerciseCountByUserId(userId)
+    ]);
 
     const logs = dbExercises.map(ex => ({
         description: ex.description,
@@ -54,7 +57,7 @@ export async function getUserLogs(
     return {
         _id: user._id,
         username: user.username,
-        count: logs.length,
+        count: totalCount,
         log: logs
     };
 }
