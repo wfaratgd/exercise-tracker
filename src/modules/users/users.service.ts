@@ -35,29 +35,29 @@ export async function addExercise(
 }
 
 export async function getUserLogs(
-    userId: number,
-    from?: string,
-    to?: string,
-    limit?: number
-): Promise<any> {
-    const user = await repo.getUserById(userId);
-    if (!user) throw new Error("User not found");
+        userId: number,
+        from?: string,
+        to?: string,
+        limit?: number
+    ): Promise<any> {
+        const user = await repo.getUserById(userId);
+        if (!user) throw new Error("User not found");
 
-    const [dbExercises, totalCount] = await Promise.all([
-        repo.getExercisesByUserId(userId, { from, to, limit }),
-        repo.getExerciseCountByUserId(userId)
-    ]);
+        const [dbExercises, totalCount] = await Promise.all([
+            repo.getExercisesByUserId(userId, { from, to, limit }),
+            repo.getExerciseCountByUserId(userId, {from, to})
+        ]);
 
-    const logs = dbExercises.map(ex => ({
-        description: ex.description,
-        duration: ex.duration,
-        date: new Date(ex.date).toDateString()
-    }));
+        const logs = dbExercises.map(ex => ({
+            description: ex.description,
+            duration: ex.duration,
+            date: new Date(ex.date).toDateString()
+        }));
 
-    return {
-        _id: user._id,
-        username: user.username,
-        count: totalCount,
-        log: logs
-    };
+        return {
+            _id: user._id,
+            username: user.username,
+            count: totalCount,
+            log: logs
+        };
 }

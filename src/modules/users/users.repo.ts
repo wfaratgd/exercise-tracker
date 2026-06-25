@@ -60,17 +60,29 @@ export function createUsersRepo(db: Database) {
                 query = query.limit(options.limit);
             }
 
-
             return query.all();
         },
 
-        async getExerciseCountByUserId(userId: number): Promise<number> {
-            const result = await utils
+        async getExerciseCountByUserId(
+            userId: number,
+            options?: {
+                from: string | undefined;
+                to: string | undefined;
+            }
+        ): Promise<number> {
+            let query = utils
                 .select("COUNT(*) as count")
                 .from<{ count: number }>("exercises")
-                .where("user_id = ?", userId)
-                .first();
+                .where("user_id = ?", userId);
 
+            if (options?.from) {
+                query = query.where("date >= ?", options.from);
+            }
+            if (options?.to) {
+                query = query.where("date <= ?", options.to);
+            }
+
+            const result = await query.first();
             return result?.count || 0;
         }
     };
